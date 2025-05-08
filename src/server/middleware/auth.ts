@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-interface UserPayload {
+export interface UserPayload {
   id: number;
   email: string;
 }
@@ -14,13 +14,14 @@ declare global {
   }
 }
 
-export const auth = (req: Request, res: Response, next: NextFunction) => {
+export const auth = (req: Request, res: Response, next: NextFunction): void => {
   try {
     // 쿠키에서 토큰 가져오기
     const token = req.cookies.token;
     
     if (!token) {
-      return res.status(401).json({ message: '인증 토큰이 없습니다.' });
+      res.status(401).json({ message: '인증 토큰이 없습니다.' });
+      return;
     }
 
     // 토큰 검증
@@ -30,6 +31,6 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
     next();
   } catch (error) {
     console.error('인증 오류:', error);
-    return res.status(401).json({ message: '인증에 실패했습니다.' });
+    res.status(401).json({ message: '인증에 실패했습니다.' });
   }
 }; 

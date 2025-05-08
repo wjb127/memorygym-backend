@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import db from '../config/db';
 import { auth } from '../middleware/auth';
 
 const router = express.Router();
 
 // 모든 과목 조회
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const subjects = await db.query(
       'SELECT * FROM subjects WHERE user_id = $1 ORDER BY created_at DESC',
@@ -20,7 +20,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // 특정 과목 조회
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -30,7 +30,8 @@ router.get('/:id', auth, async (req, res) => {
     );
 
     if (subject.rows.length === 0) {
-      return res.status(404).json({ message: '과목을 찾을 수 없습니다.' });
+      res.status(404).json({ message: '과목을 찾을 수 없습니다.' });
+      return;
     }
 
     res.json({ subject: subject.rows[0] });
@@ -41,7 +42,7 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 // 과목 생성
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, description, color } = req.body;
 
@@ -61,7 +62,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // 과목 업데이트
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { name, description, color } = req.body;
@@ -73,7 +74,8 @@ router.put('/:id', auth, async (req, res) => {
     );
 
     if (subjectCheck.rows.length === 0) {
-      return res.status(404).json({ message: '과목을 찾을 수 없습니다.' });
+      res.status(404).json({ message: '과목을 찾을 수 없습니다.' });
+      return;
     }
 
     const updatedSubject = await db.query(
@@ -92,7 +94,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // 과목 삭제
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -103,7 +105,8 @@ router.delete('/:id', auth, async (req, res) => {
     );
 
     if (subjectCheck.rows.length === 0) {
-      return res.status(404).json({ message: '과목을 찾을 수 없습니다.' });
+      res.status(404).json({ message: '과목을 찾을 수 없습니다.' });
+      return;
     }
 
     // 관련된 카드도 삭제

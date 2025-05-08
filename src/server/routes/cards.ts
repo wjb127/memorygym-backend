@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import db from '../config/db';
 import { auth } from '../middleware/auth';
 
 const router = express.Router();
 
 // 모든 카드 조회
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { subject_id } = req.query;
     let query = 'SELECT * FROM cards WHERE user_id = $1';
@@ -27,7 +27,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // 특정 카드 조회
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -37,7 +37,8 @@ router.get('/:id', auth, async (req, res) => {
     );
 
     if (card.rows.length === 0) {
-      return res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
+      res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
+      return;
     }
 
     res.json({ card: card.rows[0] });
@@ -48,7 +49,7 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 // 카드 생성
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { subject_id, front, back, difficulty } = req.body;
 
@@ -59,7 +60,8 @@ router.post('/', auth, async (req, res) => {
     );
 
     if (subjectCheck.rows.length === 0) {
-      return res.status(404).json({ message: '과목을 찾을 수 없습니다.' });
+      res.status(404).json({ message: '과목을 찾을 수 없습니다.' });
+      return;
     }
 
     const newCard = await db.query(
@@ -82,7 +84,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // 카드 업데이트
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { subject_id, front, back, difficulty } = req.body;
@@ -94,7 +96,8 @@ router.put('/:id', auth, async (req, res) => {
     );
 
     if (cardCheck.rows.length === 0) {
-      return res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
+      res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
+      return;
     }
 
     // 과목이 사용자의 것인지 확인
@@ -104,7 +107,8 @@ router.put('/:id', auth, async (req, res) => {
     );
 
     if (subjectCheck.rows.length === 0) {
-      return res.status(404).json({ message: '과목을 찾을 수 없습니다.' });
+      res.status(404).json({ message: '과목을 찾을 수 없습니다.' });
+      return;
     }
 
     const updatedCard = await db.query(
@@ -123,7 +127,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // 카드 삭제
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -134,7 +138,8 @@ router.delete('/:id', auth, async (req, res) => {
     );
 
     if (cardCheck.rows.length === 0) {
-      return res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
+      res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
+      return;
     }
 
     await db.query('DELETE FROM cards WHERE id = $1 AND user_id = $2', [id, req.user?.id]);
@@ -147,7 +152,7 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 // 카드 복습 업데이트
-router.post('/:id/review', auth, async (req, res) => {
+router.post('/:id/review', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { performance } = req.body;
@@ -159,7 +164,8 @@ router.post('/:id/review', auth, async (req, res) => {
     );
 
     if (cardCheck.rows.length === 0) {
-      return res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
+      res.status(404).json({ message: '카드를 찾을 수 없습니다.' });
+      return;
     }
 
     const card = cardCheck.rows[0];
@@ -215,7 +221,7 @@ router.post('/:id/review', auth, async (req, res) => {
 });
 
 // 오늘의 복습할 카드 조회
-router.get('/due/today', auth, async (req, res) => {
+router.get('/due/today', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { subject_id } = req.query;
     let query = 'SELECT * FROM cards WHERE user_id = $1 AND next_review_date <= NOW()';

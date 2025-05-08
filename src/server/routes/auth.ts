@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import db from '../config/db';
@@ -7,14 +7,15 @@ import { auth } from '../middleware/auth';
 const router = express.Router();
 
 // 회원가입
-router.post('/register', async (req, res) => {
+router.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, name } = req.body;
 
     // 이메일 중복 확인
     const userExists = await db.query('SELECT * FROM users WHERE email = $1', [email]);
     if (userExists.rows.length > 0) {
-      return res.status(400).json({ message: '이미 사용 중인 이메일입니다.' });
+      res.status(400).json({ message: '이미 사용 중인 이메일입니다.' });
+      return;
     }
 
     // 비밀번호 해싱
@@ -56,20 +57,22 @@ router.post('/register', async (req, res) => {
 });
 
 // 로그인
-router.post('/login', async (req, res) => {
+router.post('/login', async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     // 사용자 확인
     const user = await db.query('SELECT * FROM users WHERE email = $1', [email]);
     if (user.rows.length === 0) {
-      return res.status(400).json({ message: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+      res.status(400).json({ message: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+      return;
     }
 
     // 비밀번호 확인
     const validPassword = await bcrypt.compare(password, user.rows[0].password);
     if (!validPassword) {
-      return res.status(400).json({ message: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+      res.status(400).json({ message: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+      return;
     }
 
     // JWT 토큰 생성
@@ -101,18 +104,19 @@ router.post('/login', async (req, res) => {
 });
 
 // 로그아웃
-router.post('/logout', (req, res) => {
+router.post('/logout', (req: Request, res: Response): void => {
   res.clearCookie('token');
   res.json({ message: '로그아웃 성공' });
 });
 
 // 현재 사용자 정보 가져오기
-router.get('/me', auth, async (req, res) => {
+router.get('/me', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await db.query('SELECT id, email, name FROM users WHERE id = $1', [req.user?.id]);
     
     if (user.rows.length === 0) {
-      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+      res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+      return;
     }
 
     res.json({ user: user.rows[0] });

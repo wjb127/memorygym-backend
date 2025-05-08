@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import db from '../config/db';
 import { auth } from '../middleware/auth';
 
 const router = express.Router();
 
 // 사용자 프로필 조회
-router.get('/profile', auth, async (req, res) => {
+router.get('/profile', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await db.query(
       'SELECT id, email, name, created_at FROM users WHERE id = $1',
@@ -13,7 +13,8 @@ router.get('/profile', auth, async (req, res) => {
     );
 
     if (user.rows.length === 0) {
-      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+      res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+      return;
     }
 
     res.json({ user: user.rows[0] });
@@ -24,7 +25,7 @@ router.get('/profile', auth, async (req, res) => {
 });
 
 // 사용자 프로필 업데이트
-router.put('/profile', auth, async (req, res) => {
+router.put('/profile', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { name } = req.body;
 
@@ -34,7 +35,8 @@ router.put('/profile', auth, async (req, res) => {
     );
 
     if (updatedUser.rows.length === 0) {
-      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+      res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+      return;
     }
 
     res.json({
@@ -48,7 +50,7 @@ router.put('/profile', auth, async (req, res) => {
 });
 
 // 사용자의 통계 정보 조회
-router.get('/stats', auth, async (req, res) => {
+router.get('/stats', auth, async (req: Request, res: Response): Promise<void> => {
   try {
     // 사용자의 카드 통계 조회
     const cardStats = await db.query(
