@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: memorygym-api
+    env: node
+    buildCommand: npm install && npm run server:build
+    startCommand: npm run server:start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: memorygym-db
+          property: connectionString
+      - key: JWT_SECRET
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_URL
+        value: https://your-frontend-url.com
+
+databases:
+  - name: memorygym-db
+    plan: free
+    databaseName: memorygym
+    ipAllowList: [] 
